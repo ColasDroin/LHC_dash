@@ -101,40 +101,44 @@ layout = html.Div(
                         ),
                         dmc.Stack(
                             children=[
-                                dmc.Group(
-                                    children=[
-                                        dmc.Select(
-                                            id="knob-select",
-                                            data=list(tracker_b1.vars._owner.keys()),
-                                            searchable=True,
-                                            nothingFound="No options found",
-                                            style={"width": 200},
-                                            value="on_x1",
-                                        ),
-                                        dmc.NumberInput(
-                                            id="knob-input",
-                                            label="Knob value",
-                                            value=tracker_b1.vars["on_x1"]._value,
-                                            step=1,
-                                            style={"width": 200},
-                                        ),
-                                    ],
+                                dmc.Center(
+                                    dmc.Group(
+                                        children=[
+                                            dmc.Select(
+                                                id="knob-select",
+                                                data=list(tracker_b1.vars._owner.keys()),
+                                                searchable=True,
+                                                nothingFound="No options found",
+                                                style={"width": 200},
+                                                value="on_x1",
+                                                label="Knob selection",
+                                            ),
+                                            dmc.NumberInput(
+                                                id="knob-input",
+                                                label="Knob value",
+                                                value=tracker_b1.vars["on_x1"]._value,
+                                                step=1,
+                                                style={"width": 200},
+                                            ),
+                                        ],
+                                    ),
                                 ),
                                 dmc.Group(
                                     children=[
-                                        dcc.Loading(
-                                            children=dcc.Graph(
-                                                id="LHC-2D-near-IP",
-                                                mathjax=True,
-                                                config={
-                                                    "displayModeBar": True,
-                                                    "scrollZoom": True,
-                                                    "responsive": True,
-                                                    "displaylogo": False,
-                                                },
-                                            ),
-                                            type="circle",
+                                        # dcc.Loading(
+                                        # children=
+                                        dcc.Graph(
+                                            id="LHC-2D-near-IP",
+                                            mathjax=True,
+                                            config={
+                                                "displayModeBar": True,
+                                                "scrollZoom": True,
+                                                "responsive": True,
+                                                "displaylogo": False,
+                                            },
                                         ),
+                                        #    type="circle",
+                                        # ),
                                     ],
                                 ),
                             ],
@@ -179,22 +183,21 @@ def update_graph_LHC_layout(l_values):
     Input("knob-select", "value"),
 )
 def update_knob_input(value):
-    return tracker_b1.vars[value]
+    return tracker_b1.vars[value]._value
 
 
 @app.callback(
-    Output("LHC-2D_near-IP", "figure"),
+    Output("LHC-2D-near-IP", "figure"),
     Input("knob-input", "value"),
     State("knob-select", "value"),
 )
 def update_graph_LHC_2D_near_IP(value, knob):
-    # Initialize crossing angle at 0
     tracker_b1.vars[knob] = value
     tw_b1 = tracker_b1.twiss()
-    twmb19r5 = tw_b1.get_twiss_init(at_element="mb.b19l5.b1")
-    tw_part = tracker_b1.twiss(ele_start="mb.b19l5.b1", ele_stop="mb.b19r5.b1", twiss_init=twmb19r5)
+    # twmb19r5 = tw_b1.get_twiss_init(at_element="mb.b19l5.b1")
+    # tw_part = tracker_b1.twiss(ele_start="mb.b19l5.b1", ele_stop="mb.b19r5.b1", twiss_init=twmb19r5)
 
-    fig = plotting_functions.plot_around_IP(tw_part)
+    fig = plotting_functions.plot_around_IP(tw_b1)
 
     return fig
 

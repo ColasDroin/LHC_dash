@@ -144,7 +144,7 @@ def return_IP_trace(df_sv, add_ghost_trace=True):
             x=[200000, 200000],
             y=[0, 0],
             mode="markers",
-            # marker_symbol=218,
+            marker_symbol=218,
             marker_line_color="midnightblue",
             marker_color="grey",
             marker_line_width=2,
@@ -164,7 +164,7 @@ def return_IP_trace(df_sv, add_ghost_trace=True):
                 mode="markers",
                 x=[row["X"]],
                 y=[row["Z"]],
-                # marker_symbol="diamond",
+                marker_symbol=218,
                 marker_line_color="midnightblue",
                 marker_color="grey",
                 marker_line_width=2,
@@ -471,7 +471,7 @@ def return_plot_lattice_with_tracking(
 
 def plot_around_IP(tw_part):
     # Build figure
-    fig = make_subplots(rows=3, cols=1)
+    fig = make_subplots(rows=3, cols=1, shared_xaxes=True)
     fig.append_trace(
         go.Scatter(
             x=tw_part["s"],
@@ -568,9 +568,11 @@ def plot_around_IP(tw_part):
         # xaxis_title=r'$s$',
         # yaxis_title=r'$[m]$',
         width=1000,
-        height=600,
+        height=1000,
         legend_tracegroupgap=130,
+        dragmode="pan",
         template="plotly_white",
+        uirevision="Don't change",
     )
 
     # Update yaxis properties
