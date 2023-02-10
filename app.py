@@ -20,7 +20,7 @@ import loading_functions
     df_tw_b1,
     df_elements_corrected_b1,
 ) = loading_functions.return_all_loaded_variables(
-    "json_lines/line_b1.json", "temp/line_b1_dfs.pickle", force_load=False
+    "json_lines/line_b1.json", "temp/line_b1_dfs.pickle", force_load=False, correct_x_axis=True
 )
 (
     line_b4,
@@ -30,7 +30,7 @@ import loading_functions
     df_tw_b4,
     df_elements_corrected_b4,
 ) = loading_functions.return_all_loaded_variables(
-    "json_lines/line_b4.json", "temp/line_b4_dfs.pickle", force_load=False
+    "json_lines/line_b4.json", "temp/line_b4_dfs.pickle", force_load=False, correct_x_axis=False
 )
 
 
@@ -55,7 +55,30 @@ layout = html.Div(
         html.Div(
             id="main-div",
             children=[
-                dcc.Graph(id="LHC_layout", mathjax=True, config={"displayModeBar": False}),
+                dmc.ChipGroup(
+                    [
+                        dmc.Chip(
+                            x,
+                            value=x,
+                            variant="outline",
+                        )
+                        for x in ["8-2", "2-4", "4-6", "6-8"]
+                    ],
+                    id="chips-ip",
+                    value=["6-8"],
+                    multiple=True,
+                    mb=10,
+                ),
+                dcc.Graph(
+                    id="LHC_layout",
+                    mathjax=True,
+                    config={
+                        "displayModeBar": True,
+                        "scrollZoom": True,
+                        "responsive": True,
+                        "displaylogo": False,
+                    },
+                ),
             ],
         ),
     ]
@@ -66,11 +89,16 @@ app.layout = layout
 #################### App Callbacks ####################
 @app.callback(
     Output("LHC_layout", "figure"),
-    Input("main-div", "style"),
+    Input("chips-ip", "value"),
 )
-def update_graph(xstyle):
-    # Get indices of elements to keep (# ! implemented only for beam 1)
-    l_indices_to_keep = loading_functions.get_indices_of_interest(df_tw_b1, "ip4", "ip6")
+def update_graph(l_values):
+    l_indices_to_keep = []
+    for val in l_values:
+        str_ind_1, str_ind_2 = val.split("-")
+        # Get indices of elements to keep (# ! implemented only for beam 1)
+        l_indices_to_keep.extend(
+            loading_functions.get_indices_of_interest(df_tw_b1, "ip" + str_ind_1, "ip" + str_ind_2)
+        )
 
     fig = return_plot_lattice_with_tracking(
         df_sv_b1,

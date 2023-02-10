@@ -83,13 +83,14 @@ def return_multipole_trace(
     # Ghost trace for legend if requested
     if add_ghost_trace:
         ghost_trace = go.Scattergl(
-            x=[10000, 10001],
+            x=[200000, 200001],
             y=[0, 0],
             mode="lines",
             line=dict(color=color, width=5),
             showlegend=True,
             name=name,
             legendgroup=name,
+            visible="legendonly",
         )
 
     # Add all multipoles individually (# ? Maybe one could use a scattergl with a list of x and y coordinates instead of a loop to gain time?)
@@ -139,7 +140,7 @@ def return_IP_trace(df_sv, add_ghost_trace=True):
     # Ghost trace for legend if requested
     if add_ghost_trace:
         ghost_trace = go.Scattergl(
-            x=[10000, 10000],
+            x=[200000, 200000],
             y=[0, 0],
             mode="markers",
             # marker_symbol=218,
@@ -150,6 +151,7 @@ def return_IP_trace(df_sv, add_ghost_trace=True):
             showlegend=True,
             name="IP",
             legendgroup="IP",
+            visible="legendonly",
         )
 
     # Add all IP individually
@@ -458,8 +460,9 @@ def return_plot_lattice_with_tracking(
         yaxis_showticklabels=False,
         width=1000,
         height=1000,
-        margin=dict(l=10, r=10, b=100, t=100, pad=10),
+        # margin=dict(l=10, r=10, b=100, t=100, pad=10),
         dragmode="pan",
+        template="plotly_white",
     )
 
     return fig

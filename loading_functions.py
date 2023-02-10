@@ -3,7 +3,7 @@ import numpy as np
 import json
 import pandas as pd
 import xtrack as xt
-import dill as pickle
+import pickle
 import os
 
 #################### Functions ####################
@@ -83,7 +83,7 @@ def return_dataframe_corrected_for_thin_lens_approx(df_elements, df_tw):
     return df_elements_corrected
 
 
-def return_all_loaded_variables(line_path, save_path, force_load=False):
+def return_all_loaded_variables(line_path, save_path, force_load=False, correct_x_axis=True):
     """Return all loaded variables if they are not already loaded."""
 
     # Rebuild line and tracker (can't be pickled, most likely because of struct and multiprocessing)
@@ -95,11 +95,11 @@ def return_all_loaded_variables(line_path, save_path, force_load=False):
             df_elements, df_sv, df_tw, df_elements_corrected = pickle.load(handle)
     else:
         df_elements = return_dataframe_elements_from_line(line)
-        df_sv, df_tw = return_survey_and_twiss_dataframes_from_tracker(tracker)
+        df_sv, df_tw = return_survey_and_twiss_dataframes_from_tracker(tracker, correct_x_axis)
         df_elements_corrected = return_dataframe_corrected_for_thin_lens_approx(df_elements, df_tw)
         # Save variables
         with open(save_path, "wb") as handle:
-            pickle.dump([line, tracker, df_elements, df_sv, df_tw, df_elements_corrected], handle)
+            pickle.dump([df_elements, df_sv, df_tw, df_elements_corrected], handle)
 
     # Return all variables
     return line, tracker, df_elements, df_sv, df_tw, df_elements_corrected
