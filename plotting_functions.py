@@ -2,6 +2,7 @@
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
+from plotly.subplots import make_subplots
 
 
 #################### Functions ####################
@@ -464,5 +465,118 @@ def return_plot_lattice_with_tracking(
         dragmode="pan",
         template="plotly_white",
     )
+
+    return fig
+
+
+def plot_around_IP(tw_part):
+    # Build figure
+    fig = make_subplots(rows=3, cols=1)
+    fig.append_trace(
+        go.Scatter(
+            x=tw_part["s"],
+            y=tw_part["betx"],
+            mode="lines",
+            showlegend=True,
+            name=r"$\beta_x$",
+            legendgroup="1",
+        ),
+        row=1,
+        col=1,
+    )
+
+    fig.append_trace(
+        go.Scatter(
+            x=tw_part["s"],
+            y=tw_part["bety"],
+            mode="lines",
+            showlegend=True,
+            name=r"$\beta_y$",
+            legendgroup="1",
+        ),
+        row=1,
+        col=1,
+    )
+
+    fig.append_trace(
+        go.Scatter(
+            x=tw_part["s"],
+            y=tw_part["x"],
+            mode="lines",
+            showlegend=True,
+            name=r"$x$",
+            xaxis="x",
+            yaxis="y2",
+            legendgroup="2",
+        ),
+        row=2,
+        col=1,
+    )
+
+    fig.append_trace(
+        go.Scatter(
+            x=tw_part["s"],
+            y=tw_part["y"],
+            mode="lines",
+            showlegend=True,
+            name=r"$y$",
+            xaxis="x",
+            yaxis="y2",
+            legendgroup="2",
+        ),
+        row=2,
+        col=1,
+    )
+
+    fig.append_trace(
+        go.Scatter(
+            x=tw_part["s"],
+            y=tw_part["dx"],
+            mode="lines",
+            showlegend=True,
+            name=r"$D_x$",
+            xaxis="x",
+            yaxis="y3",
+            legendgroup="3",
+        ),
+        row=3,
+        col=1,
+    )
+
+    fig.append_trace(
+        go.Scatter(
+            x=tw_part["s"],
+            y=tw_part["dy"],
+            mode="lines",
+            showlegend=True,
+            name=r"$D_y$",
+            xaxis="x",
+            yaxis="y3",
+            legendgroup="3",
+        ),
+        row=3,
+        col=1,
+    )
+
+    # Update overall layout
+    fig.update_layout(
+        title_text="Transverse dynamics evolution with crossing angle",
+        title_x=0.5,
+        showlegend=True,
+        xaxis_showgrid=True,
+        yaxis_showgrid=True,
+        # xaxis_title=r'$s$',
+        # yaxis_title=r'$[m]$',
+        width=1000,
+        height=600,
+        legend_tracegroupgap=130,
+        template="plotly_white",
+    )
+
+    # Update yaxis properties
+    fig.update_yaxes(title_text=r"$\beta_{x,y}$ [m]", range=[0, 25000], row=1, col=1)
+    fig.update_yaxes(title_text=r"(Closed orbit)$_{x,y}$ [m]", range=[-0.12, 0.12], row=2, col=1)
+    fig.update_yaxes(title_text=r"$D_{x,y}$ [m]", range=[-1.5, 2.5], row=3, col=1)
+    fig.update_xaxes(title_text=r"$s$", row=3, col=1)
 
     return fig
