@@ -109,4 +109,6 @@ def get_indices_of_interest(df_tw, element_1, element_2):
     """Return the indices of the elements of interest."""
     idx_1 = df_tw.loc[df_tw["name"] == element_1].index[0]
     idx_2 = df_tw.loc[df_tw["name"] == element_2].index[0]
+    if idx_2 < idx_1:
+        return  list(range(0, idx_2)) + list(range(idx_1, len(df_tw)))
     return list(range(idx_1, idx_2))

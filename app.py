@@ -55,29 +55,37 @@ layout = html.Div(
         html.Div(
             id="main-div",
             children=[
-                dmc.ChipGroup(
-                    [
-                        dmc.Chip(
-                            x,
-                            value=x,
-                            variant="outline",
-                        )
-                        for x in ["8-2", "2-4", "4-6", "6-8"]
+                dmc.Group(
+                    children=[
+                        dmc.Text("Sectors to display: "),
+                        dmc.ChipGroup(
+                            [
+                                dmc.Chip(
+                                    x,
+                                    value=x,
+                                    variant="outline",
+                                )
+                                for x in ["8-2", "2-4", "4-6", "6-8"]
+                            ],
+                            id="chips-ip",
+                            value=["6-8"],
+                            multiple=True,
+                            mb=10,
+                        ),
                     ],
-                    id="chips-ip",
-                    value=["6-8"],
-                    multiple=True,
-                    mb=10,
                 ),
-                dcc.Graph(
-                    id="LHC_layout",
-                    mathjax=True,
-                    config={
-                        "displayModeBar": True,
-                        "scrollZoom": True,
-                        "responsive": True,
-                        "displaylogo": False,
-                    },
+                dcc.Loading(
+                    children=dcc.Graph(
+                        id="LHC_layout",
+                        mathjax=True,
+                        config={
+                            "displayModeBar": True,
+                            "scrollZoom": True,
+                            "responsive": True,
+                            "displaylogo": False,
+                        },
+                    ),
+                    type="circle",
                 ),
             ],
         ),
@@ -114,4 +122,4 @@ def update_graph(l_values):
 
 #################### Launch app ####################
 if __name__ == "__main__":
-    app.run_server(debug=False)
+    app.run_server(debug=False, host="0.0.0.0", port=8050)

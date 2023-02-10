@@ -90,7 +90,7 @@ def return_multipole_trace(
             showlegend=True,
             name=name,
             legendgroup=name,
-            visible="legendonly",
+            # visible="legendonly",
         )
 
     # Add all multipoles individually (# ? Maybe one could use a scattergl with a list of x and y coordinates instead of a loop to gain time?)
@@ -151,7 +151,7 @@ def return_IP_trace(df_sv, add_ghost_trace=True):
             showlegend=True,
             name="IP",
             legendgroup="IP",
-            visible="legendonly",
+            # visible="legendonly",
         )
 
     # Add all IP individually
