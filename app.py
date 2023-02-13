@@ -2,7 +2,8 @@
 
 # Import standard libraries
 import dash_mantine_components as dmc
-from dash import Dash, html, dcc, Input, Output, State
+from dash import Dash, html, dcc, Input, Output, State, ctx
+import dash
 import logging
 
 # Import functions
@@ -40,11 +41,12 @@ app = Dash(
     external_scripts=[
         "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"
     ],
+    title="LHC explorer",
 )
 
 #################### App Layout ####################
 layout = html.Div(
-    style={"width": "80%"},
+    style={"width": "80%", "margin": "auto"},
     children=[
         dmc.Header(
             height=50,
@@ -120,7 +122,20 @@ layout = html.Div(
                                                 step=1,
                                                 style={"width": 200},
                                             ),
+                                            dmc.Button(
+                                                "Update knob", id="update-knob-button", mr=10
+                                            ),
+                                            dmc.Button(
+                                                "Display whole ring", id="display-ring-button"
+                                            ),
+                                            dmc.Button(
+                                                "Display around IR 1", id="display-ir1-button"
+                                            ),
+                                            dmc.Button(
+                                                "Display around IR 5", id="display-ir5-button"
+                                            ),
                                         ],
+                                        align="end",
                                     ),
                                 ),
                                 dmc.Group(
@@ -188,18 +203,100 @@ def update_knob_input(value):
 
 @app.callback(
     Output("LHC-2D-near-IP", "figure"),
-    Input("knob-input", "value"),
+    Output("LHC-2D-near-IP", "relayoutData"),
+    Input("update-knob-button", "n_clicks"),
+    Input("display-ring-button", "n_clicks"),
+    Input("display-ir1-button", "n_clicks"),
+    Input("display-ir5-button", "n_clicks"),
+    State("knob-input", "value"),
     State("knob-select", "value"),
+    State("LHC-2D-near-IP", "relayoutData"),
+    State("LHC-2D-near-IP", "figure"),
+    prevent_initial_call=False,
 )
-def update_graph_LHC_2D_near_IP(value, knob):
-    tracker_b1.vars[knob] = value
-    tw_b1 = tracker_b1.twiss()
-    # twmb19r5 = tw_b1.get_twiss_init(at_element="mb.b19l5.b1")
-    # tw_part = tracker_b1.twiss(ele_start="mb.b19l5.b1", ele_stop="mb.b19r5.b1", twiss_init=twmb19r5)
+def update_graph_LHC_2D(
+    n_click_knob, n_click_whole_ring, n_click_ir1, n_click_ir5, knob_value, knob, relayoutData, fig
+):
+    # Prevent problems if figure is not defined for any reason
+    # if fig is None:
+    #    return dash.no_update
 
-    fig = plotting_functions.plot_around_IP(tw_b1)
+    print("RELAYOUT", relayoutData)
 
-    return fig
+    if ctx.triggered_id == "update-knob-button" or ctx.triggered_id is None:
+        # Update knob if needed
+        tracker_b1.vars[knob] = knob_value
+        tw_b1 = tracker_b1.twiss()
+        fig = plotting_functions.plot_around_IP(tw_b1)
+
+        # Update figure ranges according to relayoutData
+        if relayoutData is not None:
+            fig["layout"]["xaxis"]["range"] = [
+                relayoutData["xaxis.range[0]"],
+                relayoutData["xaxis.range[1]"],
+            ]
+            fig["layout"]["xaxis2"]["range"] = [
+                relayoutData["xaxis2.range[0]"],
+                relayoutData["xaxis2.range[1]"],
+            ]
+            fig["layout"]["xaxis3"]["range"] = [
+                relayoutData["xaxis3.range[0]"],
+                relayoutData["xaxis3.range[1]"],
+            ]
+            fig["layout"]["xaxis"]["autorange"] = False
+
+    else:
+        # Update zoom level depending on button clicked
+        match ctx.triggered_id:
+            case "display-ring-button":
+                x, y = [0, 26658.8832]
+            case "display-ir1-button":
+                x, y = [16247.725780457391, 23675.296424202796]
+            case "display-ir5-button":
+                x, y = [2833.530005905868, 10407.388328867295]
+            case _:
+                x, y = [0, 26658.8832]
+
+        # Update figure ranges
+        if "range" in fig["layout"]["xaxis"]:
+            fig["layout"]["xaxis"]["range"] = [x, y]
+            fig["layout"]["xaxis"]["autorange"] = False
+        else:
+            fig["layout"]["xaxis"] = {"range": [x, y], "autorange": False}
+
+        if "range" in fig["layout"]["xaxis2"]:
+            fig["layout"]["xaxis2"]["range"] = [x, y]
+            fig["layout"]["xaxis2"]["autorange"] = False
+        else:
+            fig["layout"]["xaxis2"] = {"range": [x, y]}
+            fig["layout"]["xaxis2"] = {"range": [x, y], "autorange": False}
+
+        if "range" in fig["layout"]["xaxis3"]:
+            fig["layout"]["xaxis3"]["range"] = [x, y]
+            fig["layout"]["xaxis3"]["autorange"] = False
+        else:
+            fig["layout"]["xaxis3"] = {"range": [x, y]}
+            fig["layout"]["xaxis3"] = {"range": [x, y], "autorange": False}
+
+        # Update relayoutData as well
+        if relayoutData is not None:
+            relayoutData["xaxis.range[0]"] = x
+            relayoutData["xaxis.range[1]"] = y
+            relayoutData["xaxis2.range[0]"] = x
+            relayoutData["xaxis2.range[1]"] = y
+            relayoutData["xaxis3.range[0]"] = x
+            relayoutData["xaxis3.range[1]"] = y
+        else:
+            relayoutData = {
+                "xaxis.range[0]": x,
+                "xaxis.range[1]": y,
+                "xaxis2.range[0]": x,
+                "xaxis2.range[1]": y,
+                "xaxis3.range[0]": x,
+                "xaxis3.range[1]": y,
+            }
+
+    return fig, relayoutData
 
 
 #################### Launch app ####################

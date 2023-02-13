@@ -144,7 +144,7 @@ def return_IP_trace(df_sv, add_ghost_trace=True):
             x=[200000, 200000],
             y=[0, 0],
             mode="markers",
-            marker_symbol=218,
+            #marker_symbol=218,
             marker_line_color="midnightblue",
             marker_color="grey",
             marker_line_width=2,
@@ -164,7 +164,7 @@ def return_IP_trace(df_sv, add_ghost_trace=True):
                 mode="markers",
                 x=[row["X"]],
                 y=[row["Z"]],
-                marker_symbol=218,
+                #marker_symbol=218,
                 marker_line_color="midnightblue",
                 marker_color="grey",
                 marker_line_width=2,
@@ -181,65 +181,57 @@ def return_IP_trace(df_sv, add_ghost_trace=True):
 
 def return_optic_trace(df_sv, df_tw, type_trace, hide_optics_traces_initially=True, beam_2=False):
     # Get the right twiss dataframe and plotting parameters
-    # ! Can't use match case as Python version on Swan is too old
-    # match type_trace:
-    #    case "betax":
-    if type_trace == "betax":
-        magnification_factor = 1.0
-        tw_name = "betx"
-        name = r"$\beta_{x2}^{0.8}$" if beam_2 else r"$\beta_{x1}^{0.8}$"
-        color = px.colors.qualitative.Plotly[3]
-        dash = "dash" if beam_2 else None
-        exponent = 0.8
+    match type_trace:
+        case "betax":
+            magnification_factor = 1.0
+            tw_name = "betx"
+            name = r"$\beta_{x2}^{0.8}$" if beam_2 else r"$\beta_{x1}^{0.8}$"
+            color = px.colors.qualitative.Plotly[3]
+            dash = "dash" if beam_2 else None
+            exponent = 0.8
 
-    # case "bety":
-    elif type_trace == "bety":
-        magnification_factor = 1.0
-        tw_name = "bety"
-        name = r"$\beta_{y2}^{0.8}$" if beam_2 else r"$\beta_{y1}^{0.8}$"
-        color = px.colors.qualitative.Plotly[4]
-        dash = "dash" if beam_2 else None
-        exponent = 0.8
+        case "bety":
+            magnification_factor = 1.0
+            tw_name = "bety"
+            name = r"$\beta_{y2}^{0.8}$" if beam_2 else r"$\beta_{y1}^{0.8}$"
+            color = px.colors.qualitative.Plotly[4]
+            dash = "dash" if beam_2 else None
+            exponent = 0.8
 
-    # case "dx":
-    elif type_trace == "dx":
-        magnification_factor = 100
-        tw_name = "dx"
-        name = r"$100D_{x2}$" if beam_2 else r"$100D_{x1}$"
-        color = px.colors.qualitative.Plotly[5]
-        dash = "dash" if beam_2 else None
-        exponent = 1.0
+        case "dx":
+            magnification_factor = 100
+            tw_name = "dx"
+            name = r"$100D_{x2}$" if beam_2 else r"$100D_{x1}$"
+            color = px.colors.qualitative.Plotly[5]
+            dash = "dash" if beam_2 else None
+            exponent = 1.0
 
-    # case "dy":
-    elif type_trace == "dy":
-        magnification_factor = 100
-        tw_name = "dy"
-        name = r"$100D_{y2}$" if beam_2 else r"$100D_{y1}$"
-        color = px.colors.qualitative.Plotly[6]
-        dash = "dash" if beam_2 else None
-        exponent = 1.0
+        case "dy":
+            magnification_factor = 100
+            tw_name = "dy"
+            name = r"$100D_{y2}$" if beam_2 else r"$100D_{y1}$"
+            color = px.colors.qualitative.Plotly[6]
+            dash = "dash" if beam_2 else None
+            exponent = 1.0
 
-    # case "x":
-    elif type_trace == "x":
-        magnification_factor = 100000
-        tw_name = "x"
-        name = r"$10^5x2$" if beam_2 else r"$10^5x_1$"
-        color = px.colors.qualitative.Plotly[7]
-        dash = "dash" if beam_2 else None
-        exponent = 1.0
+        case "x":
+            magnification_factor = 100000
+            tw_name = "x"
+            name = r"$10^5x2$" if beam_2 else r"$10^5x_1$"
+            color = px.colors.qualitative.Plotly[7]
+            dash = "dash" if beam_2 else None
+            exponent = 1.0
 
-    # case "y":
-    elif type_trace == "y":
-        magnification_factor = 100000
-        tw_name = "y"
-        name = r"$10^5y2$" if beam_2 else r"$10^5y_1$"
-        color = px.colors.qualitative.Plotly[8]
-        dash = "dash" if beam_2 else None
-        exponent = 1.0
+        case "y":
+            magnification_factor = 100000
+            tw_name = "y"
+            name = r"$10^5y2$" if beam_2 else r"$10^5y_1$"
+            color = px.colors.qualitative.Plotly[8]
+            dash = "dash" if beam_2 else None
+            exponent = 1.0
 
-    # case _:
-    else:
-        print("The type of trace is not recognized.")
+        case _:
+            print("The type of trace is not recognized.")
 
     # Correct for circular projection depending if x-coordinate has been reversed or not
     if beam_2:
@@ -569,16 +561,26 @@ def plot_around_IP(tw_part):
         # yaxis_title=r'$[m]$',
         width=1000,
         height=1000,
-        legend_tracegroupgap=130,
+        legend_tracegroupgap=160,
         dragmode="pan",
         template="plotly_white",
         uirevision="Don't change",
     )
 
     # Update yaxis properties
-    fig.update_yaxes(title_text=r"$\beta_{x,y}$ [m]", range=[0, 25000], row=1, col=1)
-    fig.update_yaxes(title_text=r"(Closed orbit)$_{x,y}$ [m]", range=[-0.12, 0.12], row=2, col=1)
+    fig.update_yaxes(title_text=r"$\beta_{x,y}$ [m]", range=[0, 10000], row=1, col=1)
+    fig.update_yaxes(title_text=r"(Closed orbit)$_{x,y}$ [m]", range=[-0.05, 0.05], row=2, col=1)
     fig.update_yaxes(title_text=r"$D_{x,y}$ [m]", range=[-1.5, 2.5], row=3, col=1)
     fig.update_xaxes(title_text=r"$s$", row=3, col=1)
+    fig.update_yaxes(fixedrange=True)
+
+    # Add range slider
+    # fig.update_layout(
+    #     xaxis=dict(
+    #         rangeslider=dict(visible=True),
+    #         type="linear",
+    #         range=(10, 20),
+    #     )
+    # )
 
     return fig
