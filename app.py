@@ -43,6 +43,7 @@ app = Dash(
     ],
     title="LHC explorer",
 )
+server = app.server
 
 #################### App Layout ####################
 layout = html.Div(
@@ -411,7 +412,8 @@ def update_text_graph_LHC_2D(clickData):
 
     return dmc.Text(
         "Please click on a multipole to get the corresponding knob information.",
-        "Click !", "Undefined type"
+        "Click !",
+        "Undefined type",
     )
 
 
