@@ -86,18 +86,63 @@ layout = html.Div(
                                         ),
                                     ],
                                 ),
-                                dcc.Loading(
-                                    children=dcc.Graph(
-                                        id="LHC-layout",
-                                        mathjax=True,
-                                        config={
-                                            "displayModeBar": True,
-                                            "scrollZoom": True,
-                                            "responsive": True,
-                                            "displaylogo": False,
-                                        },
-                                    ),
-                                    type="circle",
+                                dmc.Group(
+                                    children=[
+                                        dcc.Loading(
+                                            children=dcc.Graph(
+                                                id="LHC-layout",
+                                                mathjax=True,
+                                                config={
+                                                    "displayModeBar": True,
+                                                    "scrollZoom": True,
+                                                    "responsive": True,
+                                                    "displaylogo": False,
+                                                },
+                                            ),
+                                            type="circle",
+                                        ),
+                                        dmc.Card(
+                                            children=[
+                                                dmc.Group(
+                                                    [
+                                                        dmc.Text(
+                                                            id="title-element",
+                                                            children="Element",
+                                                            weight=500,
+                                                        ),
+                                                        dmc.Badge(
+                                                            id="type-element",
+                                                            children="Dipole",
+                                                            color="blue",
+                                                            variant="light",
+                                                        ),
+                                                    ],
+                                                    position="apart",
+                                                    mt="md",
+                                                    mb="xs",
+                                                ),
+                                                html.Div(
+                                                    id="text-element",
+                                                    children=[
+                                                        dmc.Text(
+                                                            id="initial-text",
+                                                            children=(
+                                                                "Please click on a multipole or an"
+                                                                " interaction point to get the"
+                                                                " corresponding knob information."
+                                                            ),
+                                                            size="sm",
+                                                            color="dimmed",
+                                                        ),
+                                                    ],
+                                                ),
+                                            ],
+                                            withBorder=True,
+                                            shadow="sm",
+                                            radius="md",
+                                            style={"width": 350},
+                                        ),
+                                    ]
                                 ),
                             ],
                         ),
@@ -221,8 +266,6 @@ def update_graph_LHC_2D(
     # if fig is None:
     #    return dash.no_update
 
-    print("RELAYOUT", relayoutData)
-
     if ctx.triggered_id == "update-knob-button" or ctx.triggered_id is None:
         # Update knob if needed
         tracker_b1.vars[knob] = knob_value
@@ -297,6 +340,79 @@ def update_graph_LHC_2D(
             }
 
     return fig, relayoutData
+
+
+@app.callback(
+    Output("text-element", "children"),
+    Output("title-element", "children"),
+    Output("type-element", "children"),
+    Input("LHC-layout", "clickData"),
+    prevent_initial_call=False,
+)
+def update_text_graph_LHC_2D(clickData):
+    if clickData is not None:
+        if "customdata" in clickData["points"][0]:
+            name = clickData["points"][0]["customdata"]
+            if name.startswith("mb"):
+                type_text = "Dipole"
+                try:
+                    set_var = tracker_b1.element_refs[name].knl[0]._expr._get_dependencies()
+                except:
+                    set_var = tracker_b1.element_refs[name + "..1"].knl[0]._expr._get_dependencies()
+            elif name.startswith("mq"):
+                type_text = "Quadrupole"
+                try:
+                    set_var = tracker_b1.element_refs[name].knl[1]._expr._get_dependencies()
+                except:
+                    set_var = tracker_b1.element_refs[name + "..1"].knl[1]._expr._get_dependencies()
+            elif name.startswith("ms"):
+                type_text = "Sextupole"
+                try:
+                    set_var = tracker_b1.element_refs[name].knl[2]._expr._get_dependencies()
+                except:
+                    set_var = tracker_b1.element_refs[name + "..1"].knl[2]._expr._get_dependencies()
+            elif name.startswith("mo"):
+                type_text = "Octupole"
+                try:
+                    set_var = tracker_b1.element_refs[name].knl[3]._expr._get_dependencies()
+                except:
+                    set_var = tracker_b1.element_refs[name + "..1"].knl[3]._expr._get_dependencies()
+
+            text = []
+            for var in set_var:
+                name_var = str(var).split("'")[1]
+                val = tracker_b1.vars[name_var]._get_value()
+                expr = tracker_b1.vars[name_var]._expr
+                if expr is not None:
+                    dependencies = tracker_b1.vars[name_var]._expr._get_dependencies()
+                else:
+                    dependencies = "No dependencies"
+                    expr = "No expression"
+                targets = tracker_b1.vars[name_var]._find_dependant_targets()
+
+                text.append(dmc.Text("Name: ", weight=500))
+                text.append(dmc.Text(name_var, size="sm"))
+                text.append(dmc.Text("Element value: ", weight=500))
+                text.append(dmc.Text(str(val), size="sm"))
+                text.append(dmc.Text("Expression: ", weight=500))
+                text.append(dmc.Text(str(expr), size="sm"))
+                text.append(dmc.Text("Dependencies: ", weight=500))
+                text.append(dmc.Text(str(dependencies), size="sm"))
+                text.append(dmc.Text("Targets: ", weight=500))
+                if len(targets) > 10:
+                    text.append(
+                        dmc.Text(str(targets[:10]), size="sm"),
+                    )
+                    text.append(dmc.Text("...", size="sm"))
+                else:
+                    text.append(dmc.Text(str(targets), size="sm"))
+
+            return text, name, type_text
+
+    return dmc.Text(
+        "Please click on a multipole to get the corresponding knob information.",
+        "Click !", "Undefined type"
+    )
 
 
 #################### Launch app ####################
