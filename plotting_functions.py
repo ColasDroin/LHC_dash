@@ -16,7 +16,7 @@ def return_radial_background_traces(df_sv):
         [-10000 + np.mean(df_sv["X"]), 10000 + np.mean(df_sv["X"]), 10000, -10000],
     ]:
         l_traces_background.append(
-            go.Scatter(
+            go.Scattergl(
                 x=[x1, x2],
                 y=[y1, y2],
                 mode="lines",
@@ -34,7 +34,7 @@ def return_radial_background_traces(df_sv):
 
 def return_beam_pipe_trace(df_sv):
     # Return a Plotly trace containing the beam pipe
-    return go.Scatter(
+    return go.Scattergl(
         x=df_sv["X"],
         y=df_sv["Z"],
         mode="lines",
@@ -94,42 +94,75 @@ def return_multipole_trace(
             # visible="legendonly",
         )
 
-    # Add all multipoles individually (# ? Maybe one could use a scattergl with a list of x and y coordinates instead of a loop to gain time?)
-    l_traces = []
+    # # Add all multipoles individually (# ? Maybe one could use a scattergl with a list of x and y coordinates instead of a loop to gain time?)
+    # l_traces = []
+    # for i, row in df_sv.loc[s_knl.index].iterrows():
+    #     theta = np.pi + row["theta"]
+
+    #     # Correct for dipoles with zero height
+    #     if abs(s_knl[i]) <= 0.5:
+    #         s_knl[i] = np.sign(s_knl[i]) * 1.0
+
+    #     # Add traces
+    #     l_traces.append(
+    #         go.Scattergl(
+    #             x=[
+    #                 # row["X"] - s_knl[i] / 2 * np.cos(theta),
+    #                 row["X"],
+    #                 # row["X"] + s_knl[i] / 2 * np.cos(theta),
+    #                 row["X"] + s_knl[i] * np.cos(theta),
+    #             ],
+    #             y=[
+    #                 row["Z"],
+    #                 # row["Z"] + s_knl[i] / 2 * np.sin(theta),
+    #                 row["Z"] + s_knl[i] * np.sin(theta),
+    #             ],
+    #             customdata=[row["name"], row["name"]],
+    #             mode="lines",
+    #             line=dict(
+    #                 color=color,
+    #                 width=np.ceil(s_lengths[i])
+    #                 if not np.isnan(s_lengths[i]) or np.ceil(s_lengths[i]) == 0
+    #                 else 1,
+    #             ),
+    #             showlegend=False,
+    #             name=row["name"],
+    #             legendgroup=name,
+    #         )
+    #     )
+
+    # Add all multipoles at once, merge them by line width
+    dic_trace = {}
     for i, row in df_sv.loc[s_knl.index].iterrows():
-        theta = np.pi + row["theta"]
-
-        # Correct for dipoles with zero height
-        if abs(s_knl[i]) <= 0.5:
-            s_knl[i] = np.sign(s_knl[i]) * 1.0
-
-        # Add traces
-        l_traces.append(
-            go.Scattergl(
-                x=[
-                    # row["X"] - s_knl[i] / 2 * np.cos(theta),
-                    row["X"],
-                    # row["X"] + s_knl[i] / 2 * np.cos(theta),
-                    row["X"] + s_knl[i] * np.cos(theta),
-                ],
-                y=[
-                    row["Z"],
-                    # row["Z"] + s_knl[i] / 2 * np.sin(theta),
-                    row["Z"] + s_knl[i] * np.sin(theta),
-                ],
-                customdata=[row["name"], row["name"]],
-                mode="lines",
-                line=dict(
-                    color=color,
-                    width=np.ceil(s_lengths[i])
-                    if not np.isnan(s_lengths[i]) or np.ceil(s_lengths[i]) == 0
-                    else 1,
-                ),
-                showlegend=False,
-                name=row["name"],
-                legendgroup=name,
-            )
+        width = (
+            np.ceil(s_lengths[i]) if not np.isnan(s_lengths[i]) or np.ceil(s_lengths[i]) == 0 else 1
         )
+
+        if width in dic_trace:
+            dic_trace[width]["x"].extend(
+                [row["X"], row["X"] + s_knl[i] * np.cos(row["theta"]), None]
+            )
+            dic_trace[width]["y"].extend(
+                [row["Z"], row["Z"] + s_knl[i] * np.sin(row["theta"]), None]
+            )
+            dic_trace[width]["customdata"].extend([row["name"], row["name"], None])
+        else:
+            dic_trace[width] = {
+                "x": [row["X"], row["X"] + s_knl[i] * np.cos(row["theta"]), None],
+                "y": [row["Z"], row["Z"] + s_knl[i] * np.sin(row["theta"]), None],
+                "customdata": [row["name"], row["name"], None],
+                "mode": "lines",
+                "line": dict(
+                    color=color,
+                    width=width,
+                ),
+                "showlegend": False,
+                "name": row["name"],
+                "legendgroup": name,
+                "hovertemplate": "Magnet: %{customdata}" + "<extra></extra>",
+            }
+
+    l_traces = [go.Scattergl(**dic_trace[width]) for width in dic_trace]
 
     # Return result in a list readable by plotly.add_traces()
     return [ghost_trace] + l_traces if add_ghost_trace else l_traces
@@ -156,26 +189,46 @@ def return_IP_trace(df_sv, add_ghost_trace=True):
             # visible="legendonly",
         )
 
-    # Add all IP individually
-    l_traces = []
-    for i, row in df_ip.iterrows():
-        theta = np.pi + row["theta"]
-        l_traces.append(
-            go.Scattergl(
-                mode="markers",
-                x=[row["X"]],
-                y=[row["Z"]],
-                customdata=[row["name"]],
-                # marker_symbol=218,
-                marker_line_color="midnightblue",
-                marker_color="grey",
-                marker_line_width=2,
-                marker_size=15,
-                name=row["name"],
-                showlegend=False,
-                legendgroup="IP",
-            )
+    # # Add all IP individually
+    # l_traces = []
+    # for i, row in df_ip.iterrows():
+    #     theta = np.pi + row["theta"]
+    #     l_traces.append(
+    #         go.Scattergl(
+    #             mode="markers",
+    #             x=[row["X"]],
+    #             y=[row["Z"]],
+    #             customdata=[row["name"]],
+    #             # marker_symbol=218,
+    #             marker_line_color="midnightblue",
+    #             marker_color="grey",
+    #             marker_line_width=2,
+    #             marker_size=15,
+    #             name=row["name"],
+    #             showlegend=False,
+    #             legendgroup="IP",
+    #         )
+    #     )
+
+    # Add all IP at once
+    l_traces = [
+        go.Scattergl(
+            mode="markers",
+            x=df_ip["X"],
+            y=df_ip["Z"],
+            customdata=df_ip["name"],
+            # marker_symbol=218,
+            marker_line_color="midnightblue",
+            marker_color="grey",
+            marker_line_width=2,
+            marker_size=15,
+            name="IP",
+            showlegend=False,
+            legendgroup="IP",
+            hovertemplate= "IP: %{customdata}" + "<extra></extra>",
         )
+    ]
+    
 
     # Return result in a list readable by plotly.add_traces()
     return [ghost_trace] + l_traces if add_ghost_trace else l_traces
@@ -554,7 +607,14 @@ def plot_around_IP(tw_part):
 
     # Update overall layout
     fig.update_layout(
-        title_text="Transverse dynamics evolution with crossing angle",
+        title_text=r"$q_x = " + f'{tw_part["qx"]:.5f}' + r"\hspace{0.5cm}" + r" q_y = "
+        f'{tw_part["qy"]:.5f}' + r"\hspace{0.5cm}" + r"Q'_x = "
+        f'{tw_part["dqx"]:.2f}' + r"\hspace{0.5cm}" + r" Q'_y = "
+        f'{tw_part["dqy"]:.2f}'
+        + r"\hspace{0.5cm}"
+        + r" \gamma_{tr} = "
+        + f'{1/np.sqrt(tw_part["momentum_compaction_factor"]):.2f}'
+        + r"$",  # "Transverse dynamics evolution with crossing angle",
         title_x=0.5,
         showlegend=True,
         xaxis_showgrid=True,

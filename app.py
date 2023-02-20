@@ -5,6 +5,7 @@ import dash_mantine_components as dmc
 from dash import Dash, html, dcc, Input, Output, State, ctx
 import dash
 import logging
+import numpy as np
 
 # Import functions
 import plotting_functions
@@ -340,6 +341,25 @@ def update_graph_LHC_2D(
                 "xaxis3.range[1]": y,
             }
 
+    # Update title
+    fig["layout"]["title"]["text"] = (
+        r"$q_x = "
+        + f'{tw_b1["qx"]:.5f}'
+        + r"\hspace{0.5cm}"
+        + r" q_y = "
+        + f'{tw_b1["qy"]:.5f}'
+        + r"\hspace{0.5cm}"
+        + r"Q'_x = "
+        + f'{tw_b1["dqx"]:.2f}'
+        + r"\hspace{0.5cm}"
+        + r" Q'_y = "
+        + f'{tw_b1["dqy"]:.2f}'
+        + r"\hspace{0.5cm}"
+        + r" \gamma_{tr} = "
+        + f'{1/np.sqrt(tw_b1["momentum_compaction_factor"]):.2f}'
+        + r"$"
+    )
+
     return fig, relayoutData
 
 
@@ -352,6 +372,7 @@ def update_graph_LHC_2D(
 )
 def update_text_graph_LHC_2D(clickData):
     if clickData is not None:
+        print(clickData)
         if "customdata" in clickData["points"][0]:
             name = clickData["points"][0]["customdata"]
             if name.startswith("mb"):
@@ -410,10 +431,10 @@ def update_text_graph_LHC_2D(clickData):
 
             return text, name, type_text
 
-    return dmc.Text(
-        "Please click on a multipole to get the corresponding knob information.",
-        "Click !",
-        "Undefined type",
+    return (
+        dmc.Text("Please click on a multipole to get the corresponding knob information."),
+        dmc.Text("Click !"),
+        dmc.Text("Undefined type"),
     )
 
 
