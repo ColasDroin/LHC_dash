@@ -332,7 +332,7 @@ layout = html.Div(
                                     children=return_optics_layout(), value="display-optics"
                                 ),
                             ],
-                            value="load-data",
+                            value="display-survey",
                             variant="pills",
                         ),
                     ],
@@ -580,7 +580,7 @@ def update_graph_LHC_2D(
         + r"$"
     )
 
-    fig["layout"]["title"]["x"] = 0.5
+    fig["layout"]["title"]["x"] = 0.3
     return fig, relayoutData
 
 
@@ -593,7 +593,6 @@ def update_graph_LHC_2D(
 )
 def update_text_graph_LHC_2D(clickData):
     if clickData is not None:
-        print(clickData)
         if "customdata" in clickData["points"][0]:
             name = clickData["points"][0]["customdata"]
             if name.startswith("mb"):
@@ -672,3 +671,8 @@ def update_text_graph_LHC_2D(clickData):
 #################### Launch app ####################
 if __name__ == "__main__":
     app.run_server(debug=False, host="0.0.0.0", port=8050)
+
+
+# Run with gunicorn app:server -b :8000
+# Run silently with nohup gunicorn app:server -b :8000 &
+# Kill with pkill gunicorn

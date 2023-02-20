@@ -225,10 +225,9 @@ def return_IP_trace(df_sv, add_ghost_trace=True):
             name="IP",
             showlegend=False,
             legendgroup="IP",
-            hovertemplate= "IP: %{customdata}" + "<extra></extra>",
+            hovertemplate="IP: %{customdata}" + "<extra></extra>",
         )
     ]
-    
 
     # Return result in a list readable by plotly.add_traces()
     return [ghost_trace] + l_traces if add_ghost_trace else l_traces
@@ -623,7 +622,7 @@ def plot_around_IP(tw_part):
         # yaxis_title=r'$[m]$',
         width=1000,
         height=1000,
-        legend_tracegroupgap=160,
+        legend_tracegroupgap=190,
         dragmode="pan",
         template="plotly_white",
         uirevision="Don't change",
