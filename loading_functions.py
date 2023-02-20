@@ -9,17 +9,14 @@ import os
 #################### Functions ####################
 
 
-def return_line_and_tracker_from_file(file_path):
-    """Return the line and corresponding from a json file."""
+def return_line_from_file(file_path):
+    """Return the line from a json file."""
     # Load the line
     with open(file_path, "r") as fid:
         dct = json.load(fid)
         line = xt.Line.from_dict(dct)
 
-    # Build tracker
-    tracker = line.build_tracker()
-
-    return line, tracker
+    return line
 
 
 def return_dataframe_elements_from_line(line):
@@ -83,20 +80,31 @@ def return_dataframe_corrected_for_thin_lens_approx(df_elements, df_tw):
     return df_elements_corrected
 
 
-def return_all_loaded_variables(line_path, save_path, force_load=False, correct_x_axis=True):
+def return_all_loaded_variables(
+    save_path=None, force_load=False, correct_x_axis=True, line_path=None, line=None
+):
     """Return all loaded variables if they are not already loaded."""
 
-    # Rebuild line and tracker (can't be pickled, most likely because of struct and multiprocessing)
-    line, tracker = return_line_and_tracker_from_file(line_path)
+    if line is None and line_path is not None:
+        # Rebuild line (can't be pickled, most likely because of struct and multiprocessing)
+        line = return_line_from_file(line_path)
+
+    elif line is None and line_path is None:
+        raise ValueError("Either line or line_path must be provided")
+
+    # Build tracker
+    tracker = line.build_tracker()
 
     # Check if df are already saved
-    if os.path.exists(save_path):
+    if save_path is not None and os.path.exists(save_path):
         with open(save_path, "rb") as handle:
             df_elements, df_sv, df_tw, df_elements_corrected = pickle.load(handle)
     else:
         df_elements = return_dataframe_elements_from_line(line)
         df_sv, df_tw = return_survey_and_twiss_dataframes_from_tracker(tracker, correct_x_axis)
         df_elements_corrected = return_dataframe_corrected_for_thin_lens_approx(df_elements, df_tw)
+
+    if save_path is not None:
         # Save variables
         with open(save_path, "wb") as handle:
             pickle.dump([df_elements, df_sv, df_tw, df_elements_corrected], handle)
@@ -110,5 +118,5 @@ def get_indices_of_interest(df_tw, element_1, element_2):
     idx_1 = df_tw.loc[df_tw["name"] == element_1].index[0]
     idx_2 = df_tw.loc[df_tw["name"] == element_2].index[0]
     if idx_2 < idx_1:
-        return  list(range(0, idx_2)) + list(range(idx_1, len(df_tw)))
+        return list(range(0, idx_2)) + list(range(idx_1, len(df_tw)))
     return list(range(idx_1, idx_2))
