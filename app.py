@@ -102,7 +102,7 @@ def return_LHC_survey_layout():
                                         for x in ["8-2", "2-4", "4-6", "6-8"]
                                     ],
                                     id="chips-ip",
-                                    value=["8-2", "2-4", "4-6", "6-8"],
+                                    value=["4-6"],
                                     multiple=True,
                                     mb=10,
                                 ),
