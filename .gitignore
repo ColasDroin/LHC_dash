@@ -1,0 +1,10 @@
+# Ignore all cache files
+*.pyc
+*.pyo
+*.pyd
+*.egg-info
+*.egg
+*.DS_Store
+
+# Ignore __pycache__ directories
+__pycache__/
