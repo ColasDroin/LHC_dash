@@ -1,3 +1,3 @@
 A small app to interactively explore the LHC. 
 
-![](images/preview.gif.gif)
+![](https://github.com/ColasDroin/LHC_dash/blob/master/images/preview.gif)
